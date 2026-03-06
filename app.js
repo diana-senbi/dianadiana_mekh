@@ -1,3 +1,5 @@
+console.log("APP OK");
+console.log(courseData.students);
 const STORAGE_KEY = "mechanics_course_site_v3";
 
 let state = loadState();
