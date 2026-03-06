@@ -1001,3 +1001,4 @@ const courseData = {
     }
   ]
 };
+console.log("DATA OK", courseData.students.length, courseData.weeks.length);
