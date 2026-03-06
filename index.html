@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Логин беті -->
   <div id="loginScreen" class="login-page">
     <div class="login-card">
       <h1 class="login-title">Жеке кабинетке кіру</h1>
@@ -34,6 +35,7 @@
     </div>
   </div>
 
+  <!-- Негізгі қосымша -->
   <div id="appScreen" class="app hidden">
     <header class="topbar">
       <div class="topbar-left">
@@ -60,6 +62,69 @@
     </nav>
 
     <main id="viewContainer" class="main-content"></main>
+  </div>
+
+  <!-- Сертификат модалы -->
+  <div id="certificateModal" class="certificate-modal hidden">
+    <div class="certificate-overlay" id="certificateOverlay"></div>
+
+    <div class="certificate-box">
+      <div class="certificate-paper" id="certificateContent">
+        <div class="certificate-header">
+          <p class="certificate-university">Zhansibekov University</p>
+          <h2 class="certificate-title">СЕРТИФИКАТ</h2>
+        </div>
+
+        <p class="certificate-text">
+          Осы сертификат
+        </p>
+
+        <h3 id="certificateStudentName" class="certificate-student-name">
+          Студент аты
+        </h3>
+
+        <p class="certificate-text">
+          15 апталық <b>«Механика»</b> онлайн курсын сәтті аяқтап,
+          курс тапсырмаларын орындағаны үшін беріледі.
+        </p>
+
+        <div class="certificate-info-grid">
+          <div class="certificate-info-item">
+            <span>Пән</span>
+            <strong id="certificateSubject">Механика</strong>
+          </div>
+
+          <div class="certificate-info-item">
+            <span>Жалпы балл</span>
+            <strong id="certificateScore">0</strong>
+          </div>
+
+          <div class="certificate-info-item">
+            <span>Өткен апта</span>
+            <strong id="certificateWeeks">0 / 15</strong>
+          </div>
+        </div>
+
+        <div class="certificate-bottom">
+          <div class="certificate-sign">
+            <span>Оқытушылар</span>
+            <strong>Сенби Диана, Илес Диана, Рахматулла Ернар</strong>
+          </div>
+
+          <div class="certificate-sign">
+            <span>Күні</span>
+            <strong id="certificateDate"></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="certificate-actions">
+        <button id="closeCertificateBtn" class="ghost-btn">Жабу</button>
+        <button id="downloadCertificateBtn" class="primary-btn">
+          PDF сертификат
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="data.js"></script>
