@@ -9,14 +9,31 @@ const viewContainer = document.getElementById("viewContainer");
 const studentNameEl = document.getElementById("studentName");
 const loginErrorEl = document.getElementById("loginError");
 
-document.getElementById("loginBtn").addEventListener("click", handleLogin);
-document.getElementById("logoutBtn").addEventListener("click", logout);
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+const certificateModal = document.getElementById("certificateModal");
+const certificateOverlay = document.getElementById("certificateOverlay");
+const certificateStudentName = document.getElementById("certificateStudentName");
+const certificateSubject = document.getElementById("certificateSubject");
+const certificateScore = document.getElementById("certificateScore");
+const certificateWeeks = document.getElementById("certificateWeeks");
+const certificateDate = document.getElementById("certificateDate");
+const closeCertificateBtn = document.getElementById("closeCertificateBtn");
+const downloadCertificateBtn = document.getElementById("downloadCertificateBtn");
+
+loginBtn.addEventListener("click", handleLogin);
+logoutBtn.addEventListener("click", logout);
 
 document.querySelectorAll(".nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     renderView(btn.dataset.view);
   });
 });
+
+closeCertificateBtn.addEventListener("click", closeCertificate);
+certificateOverlay.addEventListener("click", closeCertificate);
+downloadCertificateBtn.addEventListener("click", () => window.print());
 
 init();
 
@@ -121,6 +138,7 @@ function handleLogin() {
 function logout() {
   state.currentStudent = null;
   saveState();
+  closeCertificate();
   showLogin();
 }
 
@@ -245,6 +263,10 @@ function renderWeeks() {
           const wp = progress.weeks[weekNo];
           const practiceDone = wp.practices.filter((p) => p.submitted).length;
           const feedbackDone = wp.feedback.trim() ? "бар" : "жоқ";
+          const fullDone =
+            wp.testDone &&
+            wp.practices.every((p) => p.submitted) &&
+            wp.feedback.trim();
 
           return `
             <article class="week-card">
@@ -256,6 +278,7 @@ function renderWeeks() {
                 <span class="tag">Тест: ${wp.testDone ? wp.testScore + "/4" : "жоқ"}</span>
                 <span class="tag">Практика: ${practiceDone}/2</span>
                 <span class="tag">Кері байланыс: ${feedbackDone}</span>
+                <span class="tag">${fullDone ? "Аяқталған" : "Толық емес"}</span>
               </div>
 
               <button class="week-btn" onclick="openWeek(${weekNo})">Аптаны ашу</button>
@@ -323,7 +346,7 @@ function renderWeekTabContent(weekNo, tab) {
 
         <div class="card">
           <h3 class="section-subtitle">Негізгі формулалар</h3>
-          <div class="formula-box">${week.formulas.join("\n")}</div>
+          <div class="formula-box">${week.formulas.join("<br>")}</div>
         </div>
 
         <div class="card">
@@ -442,9 +465,7 @@ function submitWeekTest(weekNo) {
   const week = courseData.weeks[weekNo - 1];
   const progress = getCurrentProgress().weeks[weekNo];
 
-  if (progress.testDone) {
-    return;
-  }
+  if (progress.testDone) return;
 
   let score = 0;
   const selectedAnswers = [];
@@ -509,6 +530,7 @@ function calculateResults() {
   let earnedTestQuestions = 0;
   let completedPractices = 0;
   let completedFeedbacks = 0;
+  let completedWeeks = 0;
 
   courseData.weeks.forEach((week, index) => {
     const weekNo = index + 1;
@@ -519,6 +541,15 @@ function calculateResults() {
 
     if (wp.feedback.trim()) {
       completedFeedbacks++;
+    }
+
+    const fullDone =
+      wp.testDone &&
+      wp.practices.every((p) => p.submitted) &&
+      wp.feedback.trim();
+
+    if (fullDone) {
+      completedWeeks++;
     }
   });
 
@@ -540,7 +571,8 @@ function calculateResults() {
     total,
     earnedTestQuestions,
     completedPractices,
-    completedFeedbacks
+    completedFeedbacks,
+    completedWeeks
   };
 }
 
@@ -554,6 +586,8 @@ function getGradeLabel(total) {
 function renderResults() {
   const progress = getCurrentProgress();
   const result = calculateResults();
+  const canGetCertificate =
+    result.completedWeeks >= courseData.weeks.length && progress.finalQuizDone;
 
   viewContainer.innerHTML = `
     <section class="card">
@@ -596,6 +630,7 @@ function renderResults() {
         <p class="muted">Лекция сұрақтары: <b>${result.earnedTestQuestions}</b> / ${courseData.weeks.length * 4}</p>
         <p class="muted">Практика орындалуы: <b>${result.completedPractices}</b> / ${courseData.weeks.length * 2}</p>
         <p class="muted">Кері байланыс саны: <b>${result.completedFeedbacks}</b> / ${courseData.weeks.length}</p>
+        <p class="muted">Толық аяқталған апта: <b>${result.completedWeeks}</b> / ${courseData.weeks.length}</p>
       </div>
 
       <div class="progress-list">
@@ -633,17 +668,17 @@ function renderResults() {
 
     ${renderFinalQuizBlock(progress)}
 
-    ${
-      progress.finalQuizDone
-        ? `
-          <section class="card">
-            <h3 class="section-subtitle">Курс аяқталды</h3>
-            <p class="muted">15 апта толық аяқталған соң сертификатты ашуға болады.</p>
-            <button class="print-btn" onclick="openCertificate()">Сертификат</button>
-          </section>
-        `
-        : ""
-    }
+    <section class="card">
+      <h3 class="section-subtitle">Курс аяқталуы</h3>
+      <p class="muted">
+        Сертификат алу үшін барлық 15 апта толық орындалуы және қорытынды бақылау тапсырылуы керек.
+      </p>
+      ${
+        canGetCertificate
+          ? `<button class="print-btn" onclick="openCertificate()">Сертификатты алу</button>`
+          : `<button class="print-btn" disabled style="opacity:0.6; cursor:not-allowed;">Сертификат әлі қолжетімсіз</button>`
+      }
+    </section>
   `;
 }
 
@@ -725,61 +760,40 @@ function submitFinalQuiz() {
 }
 
 function openCertificate() {
+  const progress = getCurrentProgress();
   const result = calculateResults();
 
-  viewContainer.innerHTML = `
-    <section class="card">
-      <span class="back-link" onclick="renderView('results')">← Нәтиже бетіне қайту</span>
-      ${renderCertificateBlock(result.total)}
-    </section>
-  `;
+  const canGetCertificate =
+    result.completedWeeks >= courseData.weeks.length && progress.finalQuizDone;
+
+  if (!canGetCertificate) {
+    alert("Сертификат алу үшін барлық 15 апта толық орындалуы және қорытынды бақылау тапсырылуы керек.");
+    return;
+  }
+
+  certificateStudentName.textContent = state.currentStudent.name;
+  certificateSubject.textContent = courseData.subject;
+  certificateScore.textContent = `${result.total} / 100`;
+  certificateWeeks.textContent = `${result.completedWeeks} / ${courseData.weeks.length}`;
+  certificateDate.textContent = new Date().toLocaleDateString("kk-KZ");
+
+  certificateModal.classList.remove("hidden");
 }
 
-function renderCertificateBlock(total) {
-  return `
-    <section class="certificate-card">
-      <div class="certificate custom-cert">
-        <div class="cert-border">
-          <div class="cert-inner">
-            <h2 class="cert-title-main">СЕРТИФИКАТ</h2>
-
-            <p class="cert-text">
-              Осы сертификат жас маманға 15 апталық
-              <b>«Механика»</b> бөлімін толық меңгеріп,
-              төзімділік пен білімге деген құштарлық танытқаны үшін табысталады.
-            </p>
-
-            <div class="cert-name">${state.currentStudent.name}</div>
-
-            <p class="cert-text">
-              Бұл тек бастамасы! Алдағы сабақтарға сәттілік!
-            </p>
-
-            <div class="cert-info">
-              <div><b>Жалпы балл:</b> ${total} / 100</div>
-              <div><b>Бағасы:</b> ${getGradeLabel(total)}</div>
-            </div>
-
-            <div class="cert-awarders">
-              <h4>Табыстағандар:</h4>
-              <p>• Сенби Диана</p>
-              <p>• Илес Диана</p>
-              <p>• Рахматулла Ернар</p>
-            </div>
-
-            <div class="cert-footer-line">
-              <span>Шымкент, 2026</span>
-              <span>«Механика» бөлімі бойынша жетістік сертификаты</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <button class="print-btn" onclick="window.print()">Сертификатты шығару</button>
-    </section>
-  `;
+function closeCertificate() {
+  certificateModal.classList.add("hidden");
 }
 
 function round2(num) {
   return Math.round(num * 100) / 100;
 }
+
+/* inline onclick үшін */
+window.renderView = renderView;
+window.openWeek = openWeek;
+window.showWeekTab = showWeekTab;
+window.submitWeekTest = submitWeekTest;
+window.submitPractice = submitPractice;
+window.saveFeedback = saveFeedback;
+window.submitFinalQuiz = submitFinalQuiz;
+window.openCertificate = openCertificate;
