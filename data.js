@@ -969,7 +969,7 @@ const courseData = {
         }
   ],
   finalQuiz: [
-    }
+    {
       q: "Ньютонның екінші заңының дұрыс жазылуы:",
       options: ["A = Fs", "ΣF = ma", "p = mv", "M = Iω"],
       answer: 1
