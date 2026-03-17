@@ -2,6 +2,7 @@ const courseData = {
   subject: "Механика",
   teachers: ["Бердалиев Д.Т"],
   students: [
+    { login: "Асқарұлы_Алихан", password: "0000", name: "Асқарұлы Алихан" },
     { login: "Нұрланқызы_Аяулым", password: "0001", name: "Нұрланқызы Аяулым" },
     { login: "Төлегенов_Арман", password: "0002", name: "Төлегенов Арман" },
     { login: "Сейітова_Іңкәр", password: "0003", name: "Сейітова Іңкәр" },
