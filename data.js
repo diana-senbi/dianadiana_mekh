@@ -2,7 +2,6 @@ const courseData = {
   subject: "Механика",
   teachers: ["Бердалиев Д.Т"],
   students: [
-   { login:"Тәшенов Елдос", email:"Тәшенов Елдос", password:"0000", name:"Тәшенов Елдос" }
     { login: "Нұрланқызы_Аяулым", password: "0001", name: "Нұрланқызы Аяулым" },
     { login: "Төлегенов_Арман", password: "0002", name: "Төлегенов Арман" },
     { login: "Сейітова_Іңкәр", password: "0003", name: "Сейітова Іңкәр" },
