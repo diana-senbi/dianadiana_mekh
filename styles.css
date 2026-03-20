@@ -879,3 +879,80 @@ body {
   border-top: 1px solid #eadba3;
   padding-top: 14px;
 }
+/* ===== AI CHAT (внутренний) ===== */
+.ai-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  max-width: 920px;
+}
+
+.ai-chat{
+  background: #ffffff;
+  border: 1px solid rgba(20,20,20,.08);
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 360px;
+  max-height: 520px;
+  overflow:auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.ai-msg{
+  display:flex;
+  gap:10px;
+  margin: 10px 0;
+}
+
+.ai-bubble{
+  padding: 10px 12px;
+  border-radius: 14px;
+  max-width: 82%;
+  line-height:1.35;
+  white-space: pre-wrap;
+}
+
+.ai-user .ai-bubble{
+  background: #e9f2ff;
+  margin-left:auto;
+}
+
+.ai-bot .ai-bubble{
+  background: #f6f7fb;
+}
+
+.ai-role{
+  font-weight:600;
+  opacity:.8;
+  min-width: 64px;
+}
+
+.ai-input{
+  display:flex;
+  gap:10px;
+}
+
+.ai-input input{
+  flex:1;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(20,20,20,.12);
+  outline:none;
+}
+
+.ai-hints{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.ai-hints .hint{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:999px;
+  padding:8px 10px;
+  font-size: 13px;
+  cursor: default;
+}
+
+.muted{ opacity:.75; }
