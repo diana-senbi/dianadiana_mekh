@@ -59,10 +59,38 @@
       <button class="nav-btn active" data-view="home">Басты бет</button>
       <button class="nav-btn" data-view="weeks">15 апта</button>
       <button class="nav-btn" data-view="results">15 аптаның нәтижесі</button>
+      <button class="nav-btn" data-view="ai">AI көмекші</button>
     </nav>
 
     <main id="viewContainer" class="main-content"></main>
   </div>
+  <!-- AI КӨМЕКШІ -->
+<section id="ai" class="page hidden">
+  <div class="page-header">
+    <h2>🤖 AI көмекші (ішкі, кілтсіз)</h2>
+    <p class="muted">
+      Бұл чат интернетсіз жұмыс істейді: механика тақырыптары бойынша дайын ереже/формула/түсіндірме береді.
+      (Волькенштейн нақты № есептің “берілгенін” өзі шығарып бермейді, бірақ қалай шығару керегін айтады.)
+    </p>
+  </div>
+
+  <div class="ai-wrap">
+    <div class="ai-chat" id="aiChat"></div>
+
+    <div class="ai-input">
+      <input id="aiText" type="text" placeholder="Сұрақ жаз: мысалы 'v(t) графигі', 'Ньютон 2 заңы', 'лақтыру траекториясы'..." />
+      <button class="btn" id="aiSend">Жіберу</button>
+      <button class="btn ghost" id="aiClear">Тазалау</button>
+    </div>
+
+    <div class="ai-hints">
+      <div class="hint">Мысал: <b>“Қатты дене айналу моменті”</b></div>
+      <div class="hint">Мысал: <b>“Жұмыс және энергия теоремасы”</b></div>
+      <div class="hint">Мысал: <b>“Гармониялық тербеліс x(t)”</b></div>
+      <div class="hint">Мысал: <b>“Импульс сақталуы соқтығыс”</b></div>
+    </div>
+  </div>
+</section>
 
   <!-- Сертификат модалы -->
   <div id="certificateModal" class="certificate-modal hidden">
