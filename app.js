@@ -365,10 +365,65 @@ function renderView(view) {
     renderWeeks();
   } else if (view === "results") {
     renderResults();
+  } else if (view === "ai") {
+    renderAI();
   }
 }
 
 function renderHome() {
+  function renderHome() {
+  ...
+}  // <-- renderHome аяқталды
+
+function renderAI() {
+  viewContainer.innerHTML = `
+    <section class="card">
+      <h2 class="section-title">AI көмекші</h2>
+      <p class="muted">Сұрағыңды жаз — мен көмектесем.</p>
+
+      <div class="ai-box">
+        <div id="aiMessages" class="ai-messages"></div>
+
+        <div class="ai-input">
+          <input id="aiInput" type="text" placeholder="Мысалы: 1.4 есептің формуласын түсіндір..." />
+          <button class="btn" id="aiSendBtn">Жіберу</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  const aiMessages = document.getElementById("aiMessages");
+  const aiInput = document.getElementById("aiInput");
+  const aiSendBtn = document.getElementById("aiSendBtn");
+
+  function addMsg(who, text) {
+    const div = document.createElement("div");
+    div.className = "ai-msg " + (who === "user" ? "user" : "bot");
+    div.textContent = text;
+    aiMessages.appendChild(div);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
+  addMsg("bot", "Сәлем! Қандай тақырып/есеп керек? (мыс: Week 2, 1.4)");
+
+  function send() {
+    const q = aiInput.value.trim();
+    if (!q) return;
+
+    addMsg("user", q);
+    aiInput.value = "";
+    addMsg("bot", "Ок, түсіндірем. Қай есеп № және берілгені қандай?");
+  }
+
+  aiSendBtn.onclick = send;
+  aiInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
+  });
+}
+
+function renderWeeks() {
+  ...
+}
   viewContainer.innerHTML = `
     <section class="two-col">
       <div class="card">
