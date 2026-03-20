@@ -1,10 +1,16 @@
+/* =========================
+   Mech 1322 — app.js (FIXED)
+   ========================= */
+
 console.log("APP OK");
-console.log(courseData.students);
+console.log("students:", courseData?.students);
+
 const STORAGE_KEY = "mechanics_course_site_v3";
 
 let state = loadState();
 let currentView = "home";
 
+/* ====== DOM ====== */
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
 const viewContainer = document.getElementById("viewContainer");
@@ -24,8 +30,9 @@ const certificateDate = document.getElementById("certificateDate");
 const closeCertificateBtn = document.getElementById("closeCertificateBtn");
 const downloadCertificateBtn = document.getElementById("downloadCertificateBtn");
 
-loginBtn.addEventListener("click", handleLogin);
-logoutBtn.addEventListener("click", logout);
+/* ====== EVENTS ====== */
+if (loginBtn) loginBtn.addEventListener("click", handleLogin);
+if (logoutBtn) logoutBtn.addEventListener("click", logout);
 
 document.querySelectorAll(".nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -33,201 +40,102 @@ document.querySelectorAll(".nav-btn").forEach((btn) => {
   });
 });
 
-closeCertificateBtn.addEventListener("click", closeCertificate);
-certificateOverlay.addEventListener("click", closeCertificate);
-downloadCertificateBtn.addEventListener("click", () => window.print());
+if (closeCertificateBtn) closeCertificateBtn.addEventListener("click", closeCertificate);
+if (certificateOverlay) certificateOverlay.addEventListener("click", closeCertificate);
+if (downloadCertificateBtn) downloadCertificateBtn.addEventListener("click", () => window.print());
 
-init();// =======================
-// ВНУТРЕННИЙ AI-ЧАТ (FAQ/правила, без API)
-// =======================
+/* ====== INIT ====== */
+init();
 
-// Простая база знаний: ключевые слова -> ответ
-const AI_KB = [
-  {
-    keys: ["ньютон", "2 заңы", "екінші заң", "f=ma", "f = ma"],
-    answer:
-`Ньютонның 2-заңы:
-F⃗ = m a⃗
+/* =======================
+   AI DEMO (без API)
+   ======================= */
 
-Алгоритм:
-1) Денеге әсер ететін күштерді жазыңдар (еркін дене диаграммасы).
-2) Ось таңдап, проекцияла: ΣFx = m ax, ΣFy = m ay.
-3) Белгі (+/-) бағыттарға мұқият бол.
-Кеңес: үйкеліс болса F_үйк = μN, ал N көбіне mg немесе mg cosα болады.`
-  },
-  {
-    keys: ["ньютон", "1 заңы", "бірінші заң", "инерция"],
-    answer:
-`Ньютонның 1-заңы (инерция):
-ΣF⃗ = 0 болса, дене тыныштықта қалады немесе бірқалыпты түзу сызықты қозғалады.
+function renderAI() {
+  viewContainer.innerHTML = `
+    <section class="card">
+      <h2 class="section-title">AI көмекші</h2>
+      <p class="muted">Сұрағыңды жаз — мен бағыт беріп көмектесем.</p>
 
-Көбіне есепте: "неге a=0?" дегенге жауап осы заң болады.`
-  },
-  {
-    keys: ["күш моменті", "момент", "айналу", "tau", "τ"],
-    answer:
-`Күш моменті:
-τ = r × F, модулі: τ = rF sin(φ)
+      <div class="ai-box">
+        <div id="aiMessages" class="ai-messages"></div>
 
-Егер иін r ⟂ F болса: τ = rF.
-Тепе-теңдік шарттары (статика):
-ΣF = 0 және Στ = 0.`
-  },
-  {
-    keys: ["жұмыс", "энергия", "w=", "теорема"],
-    answer:
-`Жұмыс-энергия теоремасы:
-W_сырт = ΔK, мұнда K = mv²/2
+        <div class="ai-input">
+          <input id="aiInput" type="text" placeholder="Мысалы: Ньютон 2-заңы, үйкеліс, 1.4 есеп..." />
+          <button class="btn" id="aiSendBtn">Жіберу</button>
+        </div>
+      </div>
+    </section>
+  `;
 
-Егер күш тұрақты және бағытпен бұрышы φ:
-W = F s cosφ
+  const aiMessages = document.getElementById("aiMessages");
+  const aiInput = document.getElementById("aiInput");
+  const aiSendBtn = document.getElementById("aiSendBtn");
 
-Потенциалдық энергия:
-U_g = mgh, U_пруж = kx²/2
-Энергия сақталуы (үйкеліс жоқ):
-K1 + U1 = K2 + U2.`
-  },
-  {
-    keys: ["импульс", "соқтығыс", "p=mv", "серпімді", "серпімсіз"],
-    answer:
-`Импульс:
-p⃗ = m v⃗
+  // кішкентай база (қаласаң кеңейтеміз)
+  const KB = [
+    {
+      keys: ["ньютон", "2", "f=ma", "f = ma"],
+      answer:
+        "Ньютон 2-заңы: F⃗ = m a⃗.\nАлгоритм: 1) күштерді жаз (FBD) 2) проекция: ΣFx=max, ΣFy=may 3) белгі (+/-) дұрыс қой."
+    },
+    {
+      keys: ["үйкеліс", "mu", "μ", "көлбеу"],
+      answer:
+        "Көлбеу: mg sinα төмен, N=mg cosα. Үйкеліс: Fүйк=μN=μmg cosα. Қозғалу шарты: tgα>μ."
+    },
+    {
+      keys: ["импульс", "p=mv", "соқтығыс"],
+      answer:
+        "Импульс: p⃗=mv⃗. Сақталу: m1v1+m2v2=m1v1'+m2v2'. Егер жабысып қалса: v'=(m1v1+m2v2)/(m1+m2)."
+    },
+    {
+      keys: ["жұмыс", "энергия", "w="],
+      answer:
+        "Жұмыс-энергия: W=ΔK, K=mv²/2. Тұрақты күш: W=F s cosφ. Үйкеліс жоқ болса: K1+U1=K2+U2."
+    },
+    {
+      keys: ["лақтыру", "парабола", "траектория"],
+      answer:
+        "Лақтыру: x=v0cosα·t, y=v0sinα·t - gt²/2. Ұшу уақыты: T=2v0sinα/g. hmax=v0²sin²α/(2g)."
+    }
+  ];
 
-Импульс сақталуы (сыртқы күштер аз/жоқ):
-m1v1 + m2v2 = m1v1' + m2v2'
-
-Серпімсіз соқтығыс (жабысады):
-v' = (m1v1 + m2v2) / (m1 + m2)
-
-Серпімді соқтығыс (қосымша): энергия да сақталады.`
-  },
-  {
-    keys: ["лақтыру", "траектория", "парабола", "ұшу уақыты"],
-    answer:
-`Дене лақтыру (ауа кедергісі жоқ):
-x = v0 cosα · t
-y = v0 sinα · t - (g t²)/2
-
-Траектория:
-y(x) = x tgα - (g x²) / (2 v0² cos²α)
-
-Ұшу уақыты (жерге қайта түссе):
-T = 2 v0 sinα / g
-Max биіктік:
-h_max = v0² sin²α / (2g).`
-  },
-  {
-    keys: ["тербеліс", "гармониялық", "пружина", "маятник", "x(t)"],
-    answer:
-`Гармониялық тербеліс:
-x(t) = A cos(ωt + φ)
-v(t) = -Aω sin(ωt + φ)
-a(t) = -ω² x(t)
-
-Пружина үшін:
-ω = √(k/m), T = 2π √(m/k)
-
-Кіші тербелісті маятник:
-ω = √(g/ℓ), T = 2π √(ℓ/g).`
-  },
-  {
-    keys: ["үйкеліс", "mu", "μ", "көлбеу", "mgcos", "mgsin"],
-    answer:
-`Көлбеу жазықтық:
-- Төмен тартатын күш: mg sinα
-- Тіреу күші: N = mg cosα
-- Үйкеліс: F_үйк = μN = μmg cosα
-
-Қозғалыс басталу шарты:
-mg sinα > μmg cosα  ⇒  tgα > μ.`
-  },
-  {
-    keys: ["волькенштейн", "есеп", "берілген", "шарты"],
-    answer:
-`Волькенштейн бойынша:
-• PDF-ті ашып, есептің "берілгенін" сол жерден қарайсың.
-• Мен (ішкі чат) саған шығару жоспарын/формуланы/қадамдарды айтамын.
-Егер есеп № айтсаң, тақырыбына қарай қандай заң қолданылатынын көрсетемін.`
+  function addMsg(who, text) {
+    const div = document.createElement("div");
+    div.className = "ai-msg " + (who === "user" ? "user" : "bot");
+    div.textContent = text;
+    aiMessages.appendChild(div);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
   }
-];
 
-// fallback жауап
-function aiFallback(text){
-  return `Мен бұл сұрақты нақты "кілт сөздер" бойынша таппадым 🤔
-Мынадай форматта сұрап көр:
-- "Ньютон 2 заңы", "импульс сақталуы", "лақтыру траекториясы", "үйкеліс көлбеу", "тербеліс x(t)"
-Немесе: тақырып + не керек екенін жаз (формула ма, қадам ба, түсіндірме ме).`;
-}
-
-function aiFindAnswer(userText){
-  const t = (userText || "").toLowerCase();
-  for (const item of AI_KB){
-    if (item.keys.some(k => t.includes(k))) return item.answer;
+  function findAnswer(q) {
+    const t = (q || "").toLowerCase();
+    for (const item of KB) {
+      if (item.keys.some((k) => t.includes(k))) return item.answer;
+    }
+    return "Түсіндім 🙂 Қай тақырып/есеп №? (мыс: Week 2, 1.4). Берілгенін қысқаша жазсаң, қадамдап шығару жоспарын айтып берем.";
   }
-  return aiFallback(userText);
-}
 
-function aiAddMsg(role, text){
-  const chat = document.getElementById("aiChat");
-  if (!chat) return;
+  addMsg("bot", "Сәлем! Қандай тақырып/есеп керек? (мыс: Ньютон 2-заңы, үйкеліс, Week 2 / 1.4)");
 
-  const row = document.createElement("div");
-  row.className = "ai-msg " + (role === "user" ? "ai-user" : "ai-bot");
-
-  const roleEl = document.createElement("div");
-  roleEl.className = "ai-role";
-  roleEl.textContent = role === "user" ? "Сен" : "AI";
-
-  const bubble = document.createElement("div");
-  bubble.className = "ai-bubble";
-  bubble.textContent = text;
-
-  row.appendChild(roleEl);
-  row.appendChild(bubble);
-  chat.appendChild(row);
-
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function aiBind(){
-  const input = document.getElementById("aiText");
-  const send = document.getElementById("aiSend");
-  const clear = document.getElementById("aiClear");
-
-  if (!input || !send || !clear) return;
-
-  const doSend = () => {
-    const q = input.value.trim();
+  function send() {
+    const q = aiInput.value.trim();
     if (!q) return;
-    aiAddMsg("user", q);
-    const a = aiFindAnswer(q);
-    aiAddMsg("bot", a);
-    input.value = "";
-  };
-
-  send.addEventListener("click", doSend);
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") doSend();
-  });
-
-  clear.addEventListener("click", () => {
-    const chat = document.getElementById("aiChat");
-    if (chat) chat.innerHTML = "";
-    aiAddMsg("bot", "Сәлем! Механика бойынша сұрақ қой 🙂");
-  });
-
-  // приветствие
-  const chat = document.getElementById("aiChat");
-  if (chat && chat.children.length === 0){
-    aiAddMsg("bot", "Сәлем! Механика бойынша сұрақ қой 🙂");
+    addMsg("user", q);
+    aiInput.value = "";
+    addMsg("bot", findAnswer(q));
   }
+
+  aiSendBtn.onclick = send;
+  aiInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
+  });
 }
 
-// Сенде init() бар болса — соның ішіне aiBind() қос
-// Егер init() таба алмасаң: window.onload ішінде шақыр:
-window.addEventListener("load", () => {
-  aiBind();
-});
+/* =======================
+   CORE
+   ======================= */
 
 function init() {
   if (state.currentStudent) {
@@ -240,7 +148,6 @@ function init() {
 
 function createEmptyProgress() {
   const weeks = {};
-
   for (let i = 1; i <= courseData.weeks.length; i++) {
     weeks[i] = {
       testDone: false,
@@ -264,21 +171,13 @@ function createEmptyProgress() {
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
-
   if (!raw) {
-    return {
-      currentStudent: null,
-      progressByLogin: {}
-    };
+    return { currentStudent: null, progressByLogin: {} };
   }
-
   try {
     return JSON.parse(raw);
   } catch (error) {
-    return {
-      currentStudent: null,
-      progressByLogin: {}
-    };
+    return { currentStudent: null, progressByLogin: {} };
   }
 }
 
@@ -288,41 +187,36 @@ function saveState() {
 
 function getCurrentProgress() {
   if (!state.currentStudent) return null;
-
   const login = state.currentStudent.login;
 
   if (!state.progressByLogin[login]) {
     state.progressByLogin[login] = createEmptyProgress();
     saveState();
   }
-
   return state.progressByLogin[login];
 }
 
 function handleLogin() {
-  const login = document.getElementById("loginInput").value.trim();
-  const password = document.getElementById("passwordInput").value.trim();
+  const login = document.getElementById("loginInput")?.value.trim();
+  const password = document.getElementById("passwordInput")?.value.trim();
 
   const found = courseData.students.find(
     (student) => student.login === login && student.password === password
   );
 
   if (!found) {
-    loginErrorEl.textContent = "Логин немесе құпия сөз қате.";
+    if (loginErrorEl) loginErrorEl.textContent = "Логин немесе құпия сөз қате.";
     return;
   }
 
-  state.currentStudent = {
-    login: found.login,
-    name: found.name
-  };
+  state.currentStudent = { login: found.login, name: found.name };
 
   if (!state.progressByLogin[found.login]) {
     state.progressByLogin[found.login] = createEmptyProgress();
   }
 
   saveState();
-  loginErrorEl.textContent = "";
+  if (loginErrorEl) loginErrorEl.textContent = "";
   showApp();
   renderView("home");
 }
@@ -335,22 +229,20 @@ function logout() {
 }
 
 function showLogin() {
-  loginScreen.classList.remove("hidden");
-  appScreen.classList.add("hidden");
+  if (loginScreen) loginScreen.classList.remove("hidden");
+  if (appScreen) appScreen.classList.add("hidden");
 }
 
 function showApp() {
-  loginScreen.classList.add("hidden");
-  appScreen.classList.remove("hidden");
-
-  if (state.currentStudent) {
+  if (loginScreen) loginScreen.classList.add("hidden");
+  if (appScreen) appScreen.classList.remove("hidden");
+  if (state.currentStudent && studentNameEl) {
     studentNameEl.textContent = state.currentStudent.name;
   }
 }
 
 function setActiveNav(view) {
   currentView = view;
-
   document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
@@ -360,73 +252,18 @@ function renderView(view) {
   currentView = view;
   setActiveNav(view);
 
-  if (view === "home") {
-    renderHome();
-  } else if (view === "weeks") {
-    renderWeeks();
-  } else if (view === "results") {
-    renderResults();
-  } else if (view === "ai") {
-    renderAI();
-  } else {
-    renderHome(); // запасной вариант
-  }
+  if (view === "home") return renderHome();
+  if (view === "weeks") return renderWeeks();
+  if (view === "results") return renderResults();
+  if (view === "ai") return renderAI();
+
+  return renderHome();
 }
 
+/* =======================
+   HOME
+   ======================= */
 function renderHome() {
-  function renderHome() {
-  ...
-}  // <-- renderHome аяқталды
-
-function renderAI() {
-  viewContainer.innerHTML = `
-    <section class="card">
-      <h2 class="section-title">AI көмекші</h2>
-      <p class="muted">Сұрағыңды жаз — мен көмектесем.</p>
-
-      <div class="ai-box">
-        <div id="aiMessages" class="ai-messages"></div>
-
-        <div class="ai-input">
-          <input id="aiInput" type="text" placeholder="Мысалы: 1.4 есептің формуласын түсіндір..." />
-          <button class="btn" id="aiSendBtn">Жіберу</button>
-        </div>
-      </div>
-    </section>
-  `;
-
-  const aiMessages = document.getElementById("aiMessages");
-  const aiInput = document.getElementById("aiInput");
-  const aiSendBtn = document.getElementById("aiSendBtn");
-
-  function addMsg(who, text) {
-    const div = document.createElement("div");
-    div.className = "ai-msg " + (who === "user" ? "user" : "bot");
-    div.textContent = text;
-    aiMessages.appendChild(div);
-    aiMessages.scrollTop = aiMessages.scrollHeight;
-  }
-
-  addMsg("bot", "Сәлем! Қандай тақырып/есеп керек? (мыс: Week 2, 1.4)");
-
-  function send() {
-    const q = aiInput.value.trim();
-    if (!q) return;
-
-    addMsg("user", q);
-    aiInput.value = "";
-    addMsg("bot", "Ок, түсіндірем. Қай есеп № және берілгені қандай?");
-  }
-
-  aiSendBtn.onclick = send;
-  aiInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") send();
-  });
-}
-
-function renderWeeks() {
-  ...
-}
   viewContainer.innerHTML = `
     <section class="two-col">
       <div class="card">
@@ -493,6 +330,9 @@ function renderWeeks() {
   `;
 }
 
+/* =======================
+   WEEKS
+   ======================= */
 function renderWeeks() {
   const progress = getCurrentProgress();
 
@@ -573,10 +413,7 @@ function openWeek(weekNo) {
 }
 
 function showWeekTab(weekNo, tab, el) {
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-
+  document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
   el.classList.add("active");
   renderWeekTabContent(weekNo, tab);
 }
@@ -585,6 +422,8 @@ function renderWeekTabContent(weekNo, tab) {
   const week = courseData.weeks[weekNo - 1];
   const progress = getCurrentProgress().weeks[weekNo];
   const content = document.getElementById("weekTabContent");
+
+  if (!content) return;
 
   if (tab === "lecture") {
     content.innerHTML = `
@@ -642,6 +481,7 @@ function renderWeekTabContent(weekNo, tab) {
         </div>
       </div>
     `;
+    return;
   }
 
   if (tab === "practice") {
@@ -654,7 +494,6 @@ function renderWeekTabContent(weekNo, tab) {
       ${week.practices
         .map((task, index) => {
           const item = progress.practices[index];
-
           return `
             <div class="practice-card">
               <h3 class="section-subtitle">${task.title}</h3>
@@ -664,7 +503,7 @@ function renderWeekTabContent(weekNo, tab) {
               <textarea
                 id="practice_${weekNo}_${index}"
                 class="textarea"
-                placeholder="Берілгені, SI жүйесіне келтіру, формула, түрлендіру, есептеу, толық шығарылуы, жауабы..."
+                placeholder="Берілгені, SI, формула, түрлендіру, есептеу, толық шығарылуы, жауабы..."
                 ${item.submitted ? "disabled" : ""}
               >${item.content}</textarea>
 
@@ -680,6 +519,7 @@ function renderWeekTabContent(weekNo, tab) {
         })
         .join("")}
     `;
+    return;
   }
 
   if (tab === "feedback") {
@@ -708,13 +548,13 @@ function renderWeekTabContent(weekNo, tab) {
         }
       </div>
     `;
+    return;
   }
 }
 
 function submitWeekTest(weekNo) {
   const week = courseData.weeks[weekNo - 1];
   const progress = getCurrentProgress().weeks[weekNo];
-
   if (progress.testDone) return;
 
   let score = 0;
@@ -722,18 +562,13 @@ function submitWeekTest(weekNo) {
 
   for (let i = 0; i < week.tests.length; i++) {
     const checked = document.querySelector(`input[name="week${weekNo}_q${i}"]:checked`);
-
     if (!checked) {
       alert("Барлық сұраққа жауап бер.");
       return;
     }
-
     const value = Number(checked.value);
     selectedAnswers.push(value);
-
-    if (value === week.tests[i].answer) {
-      score++;
-    }
+    if (value === week.tests[i].answer) score++;
   }
 
   progress.testDone = true;
@@ -747,7 +582,7 @@ function submitWeekTest(weekNo) {
 
 function submitPractice(weekNo, taskIndex) {
   const textarea = document.getElementById(`practice_${weekNo}_${taskIndex}`);
-  const text = textarea.value.trim();
+  const text = (textarea?.value || "").trim();
 
   if (text.length < 30) {
     alert("Есептің толық шығарылуын толығырақ жаз.");
@@ -764,15 +599,19 @@ function submitPractice(weekNo, taskIndex) {
 }
 
 function saveFeedback(weekNo) {
-  const text = document.getElementById("feedbackArea").value.trim();
+  const text = (document.getElementById("feedbackArea")?.value || "").trim();
   const progress = getCurrentProgress().weeks[weekNo];
 
   progress.feedback = text;
-
   saveState();
+
   alert("Кері байланыс сақталды.");
   renderWeekTabContent(weekNo, "feedback");
 }
+
+/* =======================
+   RESULTS + CERT
+   ======================= */
 
 function calculateResults() {
   const progress = getCurrentProgress();
@@ -789,18 +628,14 @@ function calculateResults() {
     earnedTestQuestions += wp.testScore;
     completedPractices += wp.practices.filter((p) => p.submitted).length;
 
-    if (wp.feedback.trim()) {
-      completedFeedbacks++;
-    }
+    if (wp.feedback.trim()) completedFeedbacks++;
 
     const fullDone =
       wp.testDone &&
       wp.practices.every((p) => p.submitted) &&
       wp.feedback.trim();
 
-    if (fullDone) {
-      completedWeeks++;
-    }
+    if (fullDone) completedWeeks++;
   });
 
   const totalTestQuestions = courseData.weeks.length * 4;
@@ -986,7 +821,6 @@ function submitFinalQuiz() {
 
   for (let i = 0; i < courseData.finalQuiz.length; i++) {
     const checked = document.querySelector(`input[name="final_q${i}"]:checked`);
-
     if (!checked) {
       alert("Қорытынды бақылауда барлық сұраққа жауап бер.");
       return;
@@ -995,9 +829,7 @@ function submitFinalQuiz() {
     const value = Number(checked.value);
     selected.push(value);
 
-    if (value === courseData.finalQuiz[i].answer) {
-      score++;
-    }
+    if (value === courseData.finalQuiz[i].answer) score++;
   }
 
   progress.finalQuizDone = true;
