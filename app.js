@@ -37,7 +37,197 @@ closeCertificateBtn.addEventListener("click", closeCertificate);
 certificateOverlay.addEventListener("click", closeCertificate);
 downloadCertificateBtn.addEventListener("click", () => window.print());
 
-init();
+init();// =======================
+// ВНУТРЕННИЙ AI-ЧАТ (FAQ/правила, без API)
+// =======================
+
+// Простая база знаний: ключевые слова -> ответ
+const AI_KB = [
+  {
+    keys: ["ньютон", "2 заңы", "екінші заң", "f=ma", "f = ma"],
+    answer:
+`Ньютонның 2-заңы:
+F⃗ = m a⃗
+
+Алгоритм:
+1) Денеге әсер ететін күштерді жазыңдар (еркін дене диаграммасы).
+2) Ось таңдап, проекцияла: ΣFx = m ax, ΣFy = m ay.
+3) Белгі (+/-) бағыттарға мұқият бол.
+Кеңес: үйкеліс болса F_үйк = μN, ал N көбіне mg немесе mg cosα болады.`
+  },
+  {
+    keys: ["ньютон", "1 заңы", "бірінші заң", "инерция"],
+    answer:
+`Ньютонның 1-заңы (инерция):
+ΣF⃗ = 0 болса, дене тыныштықта қалады немесе бірқалыпты түзу сызықты қозғалады.
+
+Көбіне есепте: "неге a=0?" дегенге жауап осы заң болады.`
+  },
+  {
+    keys: ["күш моменті", "момент", "айналу", "tau", "τ"],
+    answer:
+`Күш моменті:
+τ = r × F, модулі: τ = rF sin(φ)
+
+Егер иін r ⟂ F болса: τ = rF.
+Тепе-теңдік шарттары (статика):
+ΣF = 0 және Στ = 0.`
+  },
+  {
+    keys: ["жұмыс", "энергия", "w=", "теорема"],
+    answer:
+`Жұмыс-энергия теоремасы:
+W_сырт = ΔK, мұнда K = mv²/2
+
+Егер күш тұрақты және бағытпен бұрышы φ:
+W = F s cosφ
+
+Потенциалдық энергия:
+U_g = mgh, U_пруж = kx²/2
+Энергия сақталуы (үйкеліс жоқ):
+K1 + U1 = K2 + U2.`
+  },
+  {
+    keys: ["импульс", "соқтығыс", "p=mv", "серпімді", "серпімсіз"],
+    answer:
+`Импульс:
+p⃗ = m v⃗
+
+Импульс сақталуы (сыртқы күштер аз/жоқ):
+m1v1 + m2v2 = m1v1' + m2v2'
+
+Серпімсіз соқтығыс (жабысады):
+v' = (m1v1 + m2v2) / (m1 + m2)
+
+Серпімді соқтығыс (қосымша): энергия да сақталады.`
+  },
+  {
+    keys: ["лақтыру", "траектория", "парабола", "ұшу уақыты"],
+    answer:
+`Дене лақтыру (ауа кедергісі жоқ):
+x = v0 cosα · t
+y = v0 sinα · t - (g t²)/2
+
+Траектория:
+y(x) = x tgα - (g x²) / (2 v0² cos²α)
+
+Ұшу уақыты (жерге қайта түссе):
+T = 2 v0 sinα / g
+Max биіктік:
+h_max = v0² sin²α / (2g).`
+  },
+  {
+    keys: ["тербеліс", "гармониялық", "пружина", "маятник", "x(t)"],
+    answer:
+`Гармониялық тербеліс:
+x(t) = A cos(ωt + φ)
+v(t) = -Aω sin(ωt + φ)
+a(t) = -ω² x(t)
+
+Пружина үшін:
+ω = √(k/m), T = 2π √(m/k)
+
+Кіші тербелісті маятник:
+ω = √(g/ℓ), T = 2π √(ℓ/g).`
+  },
+  {
+    keys: ["үйкеліс", "mu", "μ", "көлбеу", "mgcos", "mgsin"],
+    answer:
+`Көлбеу жазықтық:
+- Төмен тартатын күш: mg sinα
+- Тіреу күші: N = mg cosα
+- Үйкеліс: F_үйк = μN = μmg cosα
+
+Қозғалыс басталу шарты:
+mg sinα > μmg cosα  ⇒  tgα > μ.`
+  },
+  {
+    keys: ["волькенштейн", "есеп", "берілген", "шарты"],
+    answer:
+`Волькенштейн бойынша:
+• PDF-ті ашып, есептің "берілгенін" сол жерден қарайсың.
+• Мен (ішкі чат) саған шығару жоспарын/формуланы/қадамдарды айтамын.
+Егер есеп № айтсаң, тақырыбына қарай қандай заң қолданылатынын көрсетемін.`
+  }
+];
+
+// fallback жауап
+function aiFallback(text){
+  return `Мен бұл сұрақты нақты "кілт сөздер" бойынша таппадым 🤔
+Мынадай форматта сұрап көр:
+- "Ньютон 2 заңы", "импульс сақталуы", "лақтыру траекториясы", "үйкеліс көлбеу", "тербеліс x(t)"
+Немесе: тақырып + не керек екенін жаз (формула ма, қадам ба, түсіндірме ме).`;
+}
+
+function aiFindAnswer(userText){
+  const t = (userText || "").toLowerCase();
+  for (const item of AI_KB){
+    if (item.keys.some(k => t.includes(k))) return item.answer;
+  }
+  return aiFallback(userText);
+}
+
+function aiAddMsg(role, text){
+  const chat = document.getElementById("aiChat");
+  if (!chat) return;
+
+  const row = document.createElement("div");
+  row.className = "ai-msg " + (role === "user" ? "ai-user" : "ai-bot");
+
+  const roleEl = document.createElement("div");
+  roleEl.className = "ai-role";
+  roleEl.textContent = role === "user" ? "Сен" : "AI";
+
+  const bubble = document.createElement("div");
+  bubble.className = "ai-bubble";
+  bubble.textContent = text;
+
+  row.appendChild(roleEl);
+  row.appendChild(bubble);
+  chat.appendChild(row);
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function aiBind(){
+  const input = document.getElementById("aiText");
+  const send = document.getElementById("aiSend");
+  const clear = document.getElementById("aiClear");
+
+  if (!input || !send || !clear) return;
+
+  const doSend = () => {
+    const q = input.value.trim();
+    if (!q) return;
+    aiAddMsg("user", q);
+    const a = aiFindAnswer(q);
+    aiAddMsg("bot", a);
+    input.value = "";
+  };
+
+  send.addEventListener("click", doSend);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doSend();
+  });
+
+  clear.addEventListener("click", () => {
+    const chat = document.getElementById("aiChat");
+    if (chat) chat.innerHTML = "";
+    aiAddMsg("bot", "Сәлем! Механика бойынша сұрақ қой 🙂");
+  });
+
+  // приветствие
+  const chat = document.getElementById("aiChat");
+  if (chat && chat.children.length === 0){
+    aiAddMsg("bot", "Сәлем! Механика бойынша сұрақ қой 🙂");
+  }
+}
+
+// Сенде init() бар болса — соның ішіне aiBind() қос
+// Егер init() таба алмасаң: window.onload ішінде шақыр:
+window.addEventListener("load", () => {
+  aiBind();
+});
 
 function init() {
   if (state.currentStudent) {
