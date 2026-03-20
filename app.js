@@ -357,6 +357,7 @@ function setActiveNav(view) {
 }
 
 function renderView(view) {
+  currentView = view;
   setActiveNav(view);
 
   if (view === "home") {
@@ -367,6 +368,8 @@ function renderView(view) {
     renderResults();
   } else if (view === "ai") {
     renderAI();
+  } else {
+    renderHome(); // запасной вариант
   }
 }
 
